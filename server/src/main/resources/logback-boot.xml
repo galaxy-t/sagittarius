@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<!--scan: 当此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true。-->
+<!--scanPeriod: 设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位，默认单位是毫秒。当scan为true时，此属性生效。默认的时间间隔为1分钟。-->
+<!--debug: 当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。-->
+<configuration scan="false" scanPeriod="60 seconds" debug="false">
+
+    <!-- 日志文件的存储跟路径 -->
+    <property name="log.filePath" value="/Users/zhouqi/java/workspace/idea/jmcloud/portal/logs"></property>
+
+
+    <!-- 输出到控制台的配置-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+
+    <!-- INFO-->
+    <!--滚动记录文件，先将日志记录到指定文件，当符合某个条件时，将日志记录到其他文件-->
+    <!--先按日期存日志，日期变了，将前一天的日志文件名重命名为XXX%日期%索引，新的日志仍然是info.log -->
+    <!--如果日期没有发生变化，但是当前日志的文件大小超过maxFileSize时，对当前日志以版本号进行分割 重命名-->
+    <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 -->
+        <file>${log.filePath}/info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 文件名称 -->
+            <!-- %d 默认格式为yyyy-MM-dd -->
+            <fileNamePattern>${log.filePath}/info/info.%d.log</fileNamePattern>
+            <!-- 单个日志文件最大20MB -->
+            <!--<maxFileSize>20MB</maxFileSize>-->
+            <!-- 文件最大保存历史30天 -->
+            <maxHistory>30</maxHistory>
+            <!-- 最多保存20GB的INFO日志，超过该阀值将删除前面的日志 -->
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <!--设置日志的输出格式-->
+            <pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger - %m%n</pattern>
+            <!--记录日志的编码-->
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 设置日志拦截器 -->
+        <!-- 一个appender可以设置多个过滤器，此处使用的是级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 设置拦截级别：只拦截INFO级别的日志 -->
+            <level>INFO</level>
+            <!-- 用于配置符合过滤条件的操作：ACCEPT，日志会被立即处理，不再经过剩余过滤器 -->
+            <onMatch>ACCEPT</onMatch>
+            <!-- 用于配置不符合过滤条件的操作：DENY，日志将立即被抛弃不再经过其他过滤器 -->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- ERROR-->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 -->
+        <file>${log.filePath}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 文件名称 -->
+            <fileNamePattern>${log.filePath}/error/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 每产生一个日志文件，该日志文件的保存期限为30天 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger - %m%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+
+    <!-- logger配置 -->
+    <!-- name属性定义该logger所控制的包路径 -->
+    <!-- level属性控制name属性定义的包路径下的日志级别，打印包含该级别及以上的全部日志 -->
+    <!-- 日志级别由高到低依次为：FATAL > ERROR > WARN > INFO > DEBUG > TRACE -->
+    <!-- additivity,设置为true时，该logger将会向上传递，此处这样设置，将会在控制台中输入相关的信息。 -->
+    <logger name="com.kzdata.jmcloud.portal" level="INFO" additivity="true">
+        <appender-ref ref="INFO"></appender-ref>
+        <appender-ref ref="ERROR"></appender-ref>
+    </logger>
+
+
+    <!--  特殊的logger，根logger，若logger向上传递，则会将日志传递到该节点-->
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"></appender-ref>
+    </root>
+
+</configuration>
